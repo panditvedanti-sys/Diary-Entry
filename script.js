@@ -1,482 +1,450 @@
-const STUDY_LOGS = "study_history";
+class Tracker {
 
-let user;
-let engine;
-let storage;
-let timerInterval = null;
-
-class CharacterConfig {
-
-    constructor(name) {
-        this.name = name;
-        this.behavior = "IDLE";
+    constructor(date, title, content) {
+        this.date = date;
+        this.title = title;
+        this.content = content;
     }
 
-    changeState(newState) {
-        switch (newState) {
-
-            case "IDLE":
-            case "STUDYING":
-            case "BREAK":
-                this.behavior = newState;
-                break;
-
-            default:
-                console.log("Invalid state ignored: " + newState);
-                break;
-        }
+    formatter() {
+        return `${this.date} - ${this.title}: ${this.content}`;
     }
 
-    getState() {
-        return this.behavior;
+    getDate() {
+        return this.date;
     }
 
-    getName() {
-        return this.name;
+    getTitle() {
+        return this.title;
+    }
+
+    getContent() {
+        return this.content;
+    }
+
+    sanitizer() {
+        return this.title.replace(/[ /\\:*?"<>|.]/g, "_");
     }
 }
 
-class StudySession {
+class EntryModifier {
 
-    constructor(intention, accomplishment, time = new Date()) {
-        this.intention = intention;
-        this.accomplishment = accomplishment;
-        this.time = new Date(time);
+    constructor(tracker) {
+        this.tracker = tracker;
     }
 
-    getIntention() {
-        return this.intention;
+    appendEntry(text) {
+        this.tracker.content += "\n\n" + text;
+        return this.tracker;
     }
 
-    getAccomplishment() {
-        return this.accomplishment;
-    }
-
-    getTime() {
-        return this.time;
+    replaceEntry(text) {
+        this.tracker.content = text;
+        return this.tracker;
     }
 }
 
-class FileStorageManager {
-    saveSession(session) {
+class DiaryApp {
 
-        try {
-            const sessions = this.loadAllSessions();
+    constructor() {
 
-            sessions.push({
-                time: session.getTime().toISOString(),
-                intention: session.getIntention(),
-                accomplishment: session.getAccomplishment()
-            });
+        this.entries = JSON.parse(
+            localStorage.getItem("quietPagesEntries")
+        ) || [];
 
-            localStorage.setItem(
-                STUDY_LOGS,
-                JSON.stringify(sessions)
-            );
+        this.currentEntryIndex = null;
 
-            alert(
-                "Success! The session has been securely saved to your daily logs!"
-            );
-
-        } catch (error) {
-            console.error(error);
-
-            alert(
-                "Sorry, the session ran into an error and could not be saved."
-            );
-        }
+        this.setupEventListeners();
+        this.showHome();
     }
 
-    loadAllSessions() {
+    saveEntries() {
 
-        try {
-            const savedData = localStorage.getItem(STUDY_LOGS);
-
-            if (!savedData) {
-                return [];
-            }
-
-            const records = JSON.parse(savedData);
-
-            return records.map(record =>
-                new StudySession(
-                    record.intention,
-                    record.accomplishment,
-                    record.time
-                )
-            );
-
-        } catch (error) {
-            console.error("Could not load study history:", error);
-            return [];
-        }
-    }
-
-    getDateKey(date) {
-
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, "0");
-        const day = String(date.getDate()).padStart(2, "0");
-
-        return `${year}-${month}-${day}`;
-    }
-
-    calculateCurrentStreak() {
-
-        const sessions = this.loadAllSessions();
-
-        const dates = new Set();
-
-        for (const session of sessions) {
-            dates.add(
-                this.getDateKey(session.getTime())
-            );
-        }
-
-        let count = 0;
-        const current = new Date();
-
-        current.setHours(0, 0, 0, 0);
-
-        const today = this.getDateKey(current);
-
-        if (!dates.has(today)) {
-            current.setDate(current.getDate() - 1);
-        }
-
-        while (dates.has(this.getDateKey(current))) {
-
-            count++;
-
-            current.setDate(current.getDate() - 1);
-        }
-
-        return count;
-    }
-
-    loadHistory() {
-
-        const sessions = this.loadAllSessions();
-
-        const historyDisplay =
-            document.getElementById("historyDisplay");
-
-        historyDisplay.replaceChildren();
-
-        if (sessions.length === 0) {
-
-            const message = document.createElement("p");
-
-            message.textContent =
-                "You currently have no sessions recorded.";
-
-            historyDisplay.appendChild(message);
-
-            return;
-        }
-
-        sessions.forEach(session => {
-
-            const entry = document.createElement("div");
-            entry.className = "study-entry";
-
-            const date = document.createElement("p");
-            date.textContent =
-                "[" + session.getTime().toLocaleString() + "]";
-
-            const intention = document.createElement("p");
-            intention.textContent =
-                "INTENTION: " + session.getIntention();
-
-            const accomplishment = document.createElement("p");
-            accomplishment.textContent =
-                "ACCOMPLISHED: " + session.getAccomplishment();
-
-            entry.append(date, intention, accomplishment);
-
-            historyDisplay.appendChild(entry);
-        });
-
-        const total = document.createElement("p");
-
-        total.textContent =
-            "Total completed habits recorded: " + sessions.length;
-
-        historyDisplay.appendChild(total);
-    }
-}
-
-class HabitEngine {
-
-    constructor(user, initialSeconds, running) {
-
-        this.user = user;
-        this.currentTimerSeconds = initialSeconds;
-        this.running = running;
-        this.currentIntention = "";
-    }
-
-    startFocusBlock(goal) {
-
-        if (goal === null || goal.trim().isEmpty) {
-            return;
-        }
-
-        this.currentIntention = goal.trim();
-
-        this.user.changeState("STUDYING");
-
-        this.running = true;
-
-        this.currentTimerSeconds = 1500;
-    }
-
-    tick() {
-
-        if (!this.running) {
-            return;
-        }
-
-        if (this.currentTimerSeconds > 0) {
-
-            this.currentTimerSeconds--;
-
-            if (this.currentTimerSeconds === 0) {
-
-                this.user.changeState("BREAK");
-
-                this.running = false;
-            }
-        }
-    }
-
-    finishedSession(reflection) {
-
-        const session = new StudySession(
-            this.currentIntention,
-            reflection
+        localStorage.setItem(
+            "quietPagesEntries",
+            JSON.stringify(this.entries)
         );
 
-        this.currentIntention = "";
-
-        this.user.changeState("IDLE");
-
-        this.running = false;
-
-        return session;
     }
 
-    getCurrentTimerSeconds() {
-        return this.currentTimerSeconds;
-    }
+    setupEventListeners() {
+
+        document.getElementById("entry-form")
+            .addEventListener("submit", (event) => {
+
+                event.preventDefault();
+                this.addEntry();
+
+            });
 
 
-    isRunning() {
-        return this.running;
-    }
-}
+        document.getElementById("edit-form")
+            .addEventListener("submit", (event) => {
 
-function startApp() {
+                event.preventDefault();
+                this.saveEditedEntry();
 
-    let characterName = document
-        .getElementById("characterName")
-        .value.trim();
-
-    if (characterName === "") {
-        characterName = "Student";
-    }
-
-    user = new CharacterConfig(characterName);
-
-    engine = new HabitEngine(user, 0, false);
-
-    storage = new FileStorageManager();
-
-    document.getElementById("displayName").textContent =
-        user.getName();
-
-    updateCharacterStatus();
-
-    showSection("main-menu");
-}
-
-function showSection(sectionId) {
-
-    const sections = [
-        "character-setup",
-        "main-menu",
-        "focus-session",
-        "study-history",
-        "streak-display",
-        "exit-message"
-    ];
-
-    sections.forEach(id => {
-
-        document.getElementById(id).hidden =
-            id !== sectionId;
-
-    });
-}
-
-function returnToMenu() {
-
-    showSection("main-menu");
-
-    updateCharacterStatus();
-}
-
-function updateCharacterStatus() {
-
-    if (user) {
-
-        document.getElementById("characterStatus").textContent =
-            user.getState();
+            });
 
     }
-}
 
-function startFocusBlock() {
 
-    showSection("focus-session");
+    showView(viewId, heading) {
 
-    document.getElementById("goal-entry").hidden = false;
+        const views = document.querySelectorAll(".view");
 
-    document.getElementById("active-session").hidden = true;
+        views.forEach(view => {
+            view.classList.add("hidden");
+        });
 
-    document.getElementById("reflection-section").hidden = true;
+        document.getElementById(viewId)
+            .classList.remove("hidden");
 
-    document.getElementById("goal").value = "";
+        document.getElementById("page-heading")
+            .textContent = heading;
 
-    document.getElementById("reflection").value = "";
-}
+        this.updateNavigation(viewId);
 
-function beginSession() {
+    }
+    updateNavigation(viewId) {
 
-    const goal = document.getElementById("goal").value.trim();
+        const buttons = document.querySelectorAll(".nav-button");
 
-    if (goal === "") {
+        buttons.forEach(button => {
+            button.classList.remove("active");
+        });
 
-        alert("Please enter a study goal first.");
+        if (viewId === "home-view") {
+            buttons[0].classList.add("active");
+        }
 
-        return;
+        else if (viewId === "add-view") {
+            buttons[1].classList.add("active");
+        }
+
+        else if (
+            viewId === "entries-view" ||
+            viewId === "detail-view" ||
+            viewId === "edit-view"
+        ) {
+            buttons[2].classList.add("active");
+        }
+
     }
 
-    engine.startFocusBlock(goal);
+    showHome() {
 
-    document.getElementById("goal-entry").hidden = true;
+        this.showView("home-view", "Welcome back.");
 
-    document.getElementById("active-session").hidden = false;
+        this.displayRecentEntries();
 
-    document.getElementById("sessionGoal").textContent =
-        engine.currentIntention;
+    }
 
-    updateCharacterStatus();
+    showAddEntry() {
 
-    updateTimerDisplay();
+        this.showView("add-view", "A new page.");
 
-    document.getElementById("timerStatus").textContent =
-        "Stay focused!";
+        document.getElementById("entry-form").reset();
 
-    clearInterval(timerInterval);
+        document.getElementById("entry-date").value =
+            new Date().toISOString().split("T")[0];
 
-    timerInterval = setInterval(() => {
+    }
 
-        engine.tick();
+    addEntry() {
 
-        updateTimerDisplay();
+        const date = document.getElementById("entry-date").value;
 
-        updateCharacterStatus();
+        const title = document.getElementById("entry-title").value.trim();
 
-        if (!engine.isRunning()) {
+        const content = document.getElementById("entry-content").value.trim();
 
-            clearInterval(timerInterval);
 
-            document.getElementById("timerStatus").textContent =
-                "Focus block complete! Take a break or finish your reflection.";
+        if (!date || !title || !content) {
+            alert("Please complete all fields.");
+            return;
+        }
+
+
+        const newEntry = new Tracker(date, title, content);
+
+        this.entries.unshift(newEntry);
+
+        this.saveEntries();
+
+        document.getElementById("entry-form").reset();
+
+        alert("Your entry has been saved.");
+
+        this.showHome();
+
+    }
+
+    displayRecentEntries() {
+
+        const container = document.getElementById("recent-entries");
+
+        container.innerHTML = "";
+
+
+        if (this.entries.length === 0) {
+
+            container.innerHTML = `
+                <div class="empty-state">
+                    <h4>Your pages are waiting.</h4>
+                    <p>Write your first entry to begin your collection.</p>
+                </div>
+            `;
+
+            return;
+        }
+
+
+        const recentEntries = this.entries.slice(0, 3);
+
+        recentEntries.forEach((entry, index) => {
+
+            const card = this.createEntryCard(entry, index);
+
+            container.appendChild(card);
+
+        });
+
+    }
+
+    showEntries() {
+
+        this.showView("entries-view", "Your collection.");
+
+        this.displayAllEntries();
+
+    }
+    displayAllEntries() {
+
+        const container = document.getElementById("all-entries");
+
+        container.innerHTML = "";
+
+
+        if (this.entries.length === 0) {
+
+            container.innerHTML = `
+                <div class="empty-state">
+                    <h4>No entries yet.</h4>
+                    <p>Your journal will fill up one page at a time.</p>
+                </div>
+            `;
+
+            return;
+        }
+
+
+        this.entries.forEach((entry, index) => {
+
+            const card = this.createEntryCard(entry, index);
+
+            container.appendChild(card);
+
+        });
+
+    }
+    createEntryCard(entry, index) {
+
+        const card = document.createElement("div");
+
+        card.className = "entry-card";
+
+
+        const date = document.createElement("p");
+
+        date.className = "entry-date";
+
+        date.textContent = entry.date;
+
+
+        const title = document.createElement("h4");
+
+        title.textContent = entry.title;
+
+
+        const preview = document.createElement("p");
+
+        preview.className = "entry-preview";
+
+        preview.textContent =
+            entry.content.length > 100
+                ? entry.content.substring(0, 100) + "..."
+                : entry.content;
+
+
+        card.appendChild(date);
+
+        card.appendChild(title);
+
+        card.appendChild(preview);
+
+
+        card.addEventListener("click", () => {
+
+            this.currentEntryIndex = index;
+
+            this.showDetail();
+
+        });
+
+
+        return card;
+
+    }
+    showDetail() {
+
+        const entry = this.entries[this.currentEntryIndex];
+
+        if (!entry) {
+            this.showEntries();
+            return;
+        }
+
+
+        this.showView("detail-view", "Your journal.");
+
+
+        document.getElementById("detail-date").textContent =
+            entry.date;
+
+        document.getElementById("detail-title").textContent =
+            entry.title;
+
+        document.getElementById("detail-content").textContent =
+            entry.content;
+
+    }
+    
+    editEntry() {
+
+        const entry = this.entries[this.currentEntryIndex];
+
+        if (!entry) return;
+
+
+        this.showView("edit-view", "Edit your entry.");
+
+
+        document.getElementById("edit-date").value =
+            entry.date;
+
+        document.getElementById("edit-title").value =
+            entry.title;
+
+        document.getElementById("edit-content").value =
+            entry.content;
+
+    }
+
+    saveEditedEntry() {
+
+        const date = document.getElementById("edit-date").value;
+
+        const title = document.getElementById("edit-title").value.trim();
+
+        const content = document.getElementById("edit-content").value.trim();
+
+
+        if (!date || !title || !content) {
+
+            alert("Please complete all fields.");
+
+            return;
 
         }
 
-    }, 1000);
-}
 
-function updateTimerDisplay() {
+        this.entries[this.currentEntryIndex] =
+            new Tracker(date, title, content);
 
-    const seconds = engine.getCurrentTimerSeconds();
 
-    const minutes = Math.floor(seconds / 60);
+        this.saveEntries();
 
-    const remainingSeconds = seconds % 60;
+        alert("Your changes have been saved.");
 
-    const formattedTime =
-        String(minutes).padStart(2, "0") + ":" +
-        String(remainingSeconds).padStart(2, "0");
+        this.showDetail();
 
-    document.getElementById("timerDisplay").textContent =
-        formattedTime;
-}
-
-function finishFocusBlock() {
-
-    clearInterval(timerInterval);
-
-    timerInterval = null;
-
-    document.getElementById("active-session").hidden = true;
-
-    document.getElementById("reflection-section").hidden = false;
-
-}
-
-function saveSession() {
-
-    const reflection = document
-        .getElementById("reflection")
-        .value.trim();
-
-    if (reflection === "") {
-
-        alert("Please complete your reflection before saving.");
-
-        return;
     }
 
-    const session = engine.finishedSession(reflection);
+    appendEntry() {
 
-    storage.saveSession(session);
+        const text = prompt("What would you like to add to this entry?");
 
-    clearInterval(timerInterval);
 
-    timerInterval = null;
+        if (text === null || text.trim() === "") {
+            return;
+        }
 
-    updateCharacterStatus();
 
-    showSection("main-menu");
+        const modifier = new EntryModifier(
+            this.entries[this.currentEntryIndex]
+        );
+
+
+        modifier.appendEntry(text.trim());
+
+
+        this.saveEntries();
+
+        this.showDetail();
+
+        alert("Your text has been added.");
+
+    }
+
+    replaceEntry() {
+
+        const newContent = prompt(
+            "Enter the new content for this entry:"
+        );
+        if (newContent === null || newContent.trim() === "") {
+            return;
+        }
+
+
+        const modifier = new EntryModifier(
+            this.entries[this.currentEntryIndex]
+        );
+
+
+        modifier.replaceEntry(newContent.trim());
+
+
+        this.saveEntries();
+
+        this.showDetail();
+
+        alert("Your entry has been updated.");
+
+    }
+    deleteCurrentEntry() {
+
+        const confirmed = confirm(
+            "Are you sure you want to delete this entry?"
+        );
+
+
+        if (!confirmed) {
+            return;
+        }
+
+
+        this.entries.splice(this.currentEntryIndex, 1);
+
+        this.currentEntryIndex = null;
+
+        this.saveEntries();
+
+        alert("Your entry has been deleted.");
+
+        this.showEntries();
+
+    }
 
 }
-
-function viewHistory() {
-
-    showSection("study-history");
-
-    storage.loadHistory();
-}
-
-function checkStreak() {
-
-    const streak = storage.calculateCurrentStreak();
-
-    document.getElementById("streakCount").textContent =
-        streak;
-
-    showSection("streak-display");
-}
-
-function exitApp() {
-
-    clearInterval(timerInterval);
-
-    timerInterval = null;
-
-    showSection("exit-message");
-}
+const app = new DiaryApp();
