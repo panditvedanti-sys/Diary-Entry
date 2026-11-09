@@ -3,157 +3,253 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Study Session Recorder</title>
+    <title>Quiet Pages | My Diary</title>
+
     <link rel="stylesheet" href="style.css">
-    <script src="script.js" defer></script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 
 <body>
 
-    <main class="container">
+    <div class="app-container">
 
-        <header>
-            <h1>Study Session Recorder</h1>
-            <p>Build consistency, one session at a time.</p>
-        </header>
-
-        <section id="character-setup" class="panel">
-            <h2>Welcome!</h2>
-            <p>Let's get your study journey started.</p>
-
-            <label for="characterName">Enter your character's name:</label>
-            <input type="text" id="characterName"
-                   placeholder="Student">
-
-            <button onclick="startApp()">Continue</button>
-        </section>
-
-        <section id="main-menu" class="panel" hidden>
-
-            <h2>Hello, <span id="displayName"></span>!</h2>
-
-            <div class="status">
-                Current Character Status:
-                <strong id="characterStatus">IDLE</strong>
+        <!-- SIDEBAR -->
+        <aside class="sidebar">
+            <div class="brand">
+                <div class="brand-icon">Q</div>
+                <div>
+                    <h1>Quiet Pages</h1>
+                    <p>YOUR PERSONAL JOURNAL</p>
+                </div>
             </div>
 
-            <div class="menu-buttons">
-                <button onclick="startFocusBlock()">
-                    Start a Focus Block
+            <nav>
+                <button class="nav-button active" onclick="app.showHome()">
+                    <span>⌂</span> Home
                 </button>
 
-                <button onclick="viewHistory()">
-                    View Study History
+                <button class="nav-button" onclick="app.showAddEntry()">
+                    <span>＋</span> New Entry
                 </button>
 
-                <button onclick="checkStreak()">
-                    Check Current Streak
+                <button class="nav-button" onclick="app.showEntries()">
+                    <span>▤</span> My Entries
                 </button>
+            </nav>
 
-                <button class="secondary" onclick="exitApp()">
-                    Exit
-                </button>
+            <div class="sidebar-note">
+                <span class="quote-mark">“</span>
+                <p>A little space to collect your thoughts.</p>
             </div>
 
-        </section>
-
-        <section id="focus-session" class="panel" hidden>
-
-            <h2>Focus Session</h2>
-
-            <div id="goal-entry">
-                <label for="goal">
-                    What is your intention/goal for this session?
-                </label>
-
-                <input type="text" id="goal"
-                       placeholder="e.g. Complete physics homework">
-
-                <button onclick="beginSession()">
-                    Begin Focus Block
-                </button>
+            <div class="sidebar-footer">
+                YOUR DIARY ENTRIES
             </div>
+        </aside>
 
-            <div id="active-session" hidden>
+        <!-- MAIN CONTENT -->
+        <main class="main-content">
 
-                <p>Current Goal:</p>
-                <h3 id="sessionGoal"></h3>
-
-                <div class="timer" id="timerDisplay">
-                    25:00
+            <header class="topbar">
+                <div>
+                    <p class="eyebrow">YOUR OWN SPACE</p>
+                    <h2 id="page-heading">Welcome back.</h2>
                 </div>
 
-                <p id="timerStatus">Stay focused!</p>
+                <button class="primary-button" onclick="app.showAddEntry()">
+                    + Write an Entry
+                </button>
+            </header>
 
-                <button onclick="finishFocusBlock()">
-                    Finish Focus Session
+            <section id="home-view" class="view">
+
+                <div class="welcome-card">
+                    <div class="welcome-text">
+                        <p class="eyebrow light">A MOMENT FOR YOURSELF</p>
+                        <h2>Every thought<br>has a place here.</h2>
+                        <p>
+                            Write freely, remember the little things,
+                            and make room for your thoughts.
+                        </p>
+
+                        <button class="light-button" onclick="app.showAddEntry()">
+                            Start Writing →
+                        </button>
+                    </div>
+
+                    <div class="welcome-decoration">
+                        <div class="decoration-circle">
+                            <span>✦</span>
+                        </div>
+                        <p>slow down.<br>reflect. remember.</p>
+                    </div>
+                </div>
+
+
+                <div class="section-heading">
+                    <div>
+                        <p class="eyebrow">YOUR JOURNAL</p>
+                        <h3>Recently Written</h3>
+                    </div>
+
+                    <button class="text-button" onclick="app.showEntries()">
+                        View all →
+                    </button>
+                </div>
+
+                <div id="recent-entries" class="entries-grid">
+                    <!-- Entries appear here -->
+                </div>
+
+            </section>
+            <section id="add-view" class="view hidden">
+
+                <div class="form-card">
+                    <p class="eyebrow">A NEW PAGE</p>
+                    <h3>What's on your mind?</h3>
+                    <p class="form-description">
+                        Take your time. This space is yours.
+                    </p>
+
+                    <form id="entry-form">
+
+                        <label for="entry-date">Date</label>
+                        <input type="date" id="entry-date" required>
+
+                        <label for="entry-title">Title</label>
+                        <input
+                            type="text"
+                            id="entry-title"
+                            placeholder="Give this moment a name..."
+                            required
+                        >
+
+                        <label for="entry-content">Your thoughts</label>
+                        <textarea
+                            id="entry-content"
+                            rows="10"
+                            placeholder="Start writing here..."
+                            required
+                        ></textarea>
+
+                        <div class="form-actions">
+                            <button
+                                type="button"
+                                class="secondary-button"
+                                onclick="app.showHome()"
+                            >
+                                Cancel
+                            </button>
+
+                            <button type="submit" class="primary-button">
+                                Save Entry
+                            </button>
+                        </div>
+
+                    </form>
+                </div>
+            </section>
+
+            <section id="entries-view" class="view hidden">
+
+                <div class="section-heading">
+                    <div>
+                        <p class="eyebrow">YOUR COLLECTION</p>
+                        <h3>All Entries</h3>
+                        <p class="form-description">
+                            Every page you've written, all in one place.
+                        </p>
+                    </div>
+                </div>
+
+                <div id="all-entries" class="entries-grid">
+                    <!-- Entries appear here -->
+                </div>
+            </section>
+            
+            <section id="detail-view" class="view hidden">
+
+                <button class="text-button back-button" onclick="app.showEntries()">
+                    ← Back to entries
                 </button>
 
-            </div>
+                <div class="detail-card">
+                    <p id="detail-date" class="eyebrow"></p>
+                    <h2 id="detail-title"></h2>
 
-            <div id="reflection-section" hidden>
+                    <div class="detail-divider"></div>
 
-                <h3>Session Reflection</h3>
+                    <p id="detail-content" class="detail-content"></p>
 
-                <label for="reflection">
-                    What did you accomplish? Reflect on one area you
-                    were consistent on and one area for improvement.
-                </label>
+                    <div class="form-actions">
+                        <button class="secondary-button" onclick="app.showEntries()">
+                            Back
+                        </button>
 
-                <textarea id="reflection"
-                          rows="5"
-                          placeholder="Write your reflection here..."></textarea>
+                        <button class="secondary-button" onclick="app.appendEntry()">
+                            Append Text
+                        </button>
 
-                <button onclick="saveSession()">
-                    Save Session
-                </button>
+                        <button class="secondary-button" onclick="app.editEntry()">
+                            Edit Entry
+                        </button>
 
-            </div>
+                        <button class="danger-button" onclick="app.deleteCurrentEntry()">
+                            Delete
+                        </button>
+                    </div>
+                </div>
 
-            <button class="secondary back-button"
-                    onclick="returnToMenu()">
-                Back to Menu
-            </button>
+            </section>
 
-        </section>
+            <section id="edit-view" class="view hidden">
 
-        <section id="study-history" class="panel" hidden>
+                <div class="form-card">
+                    <p class="eyebrow">REVISIT A PAGE</p>
+                    <h3>Edit Your Entry</h3>
 
-            <h2>Your Study Logs History</h2>
+                    <form id="edit-form">
 
-            <div id="historyDisplay"></div>
+                        <label for="edit-date">Date</label>
+                        <input type="date" id="edit-date" required>
 
-            <button class="secondary"
-                    onclick="returnToMenu()">
-                Back to Menu
-            </button>
+                        <label for="edit-title">Title</label>
+                        <input type="text" id="edit-title" required>
 
-        </section>
+                        <label for="edit-content">Content</label>
+                        <textarea id="edit-content" rows="10" required></textarea>
 
-        <section id="streak-display" class="panel" hidden>
+                        <div class="form-actions">
+                            <button
+                                type="button"
+                                class="secondary-button"
+                                onclick="app.showDetail()"
+                            >
+                                Cancel
+                            </button>
 
-            <h2>Your Current Streak</h2>
+                            <button type="submit" class="primary-button">
+                                Save Changes
+                            </button>
+                        </div>
 
-            <div class="streak-number" id="streakCount">0</div>
+                    </form>
+                </div>
 
-            <p>Consecutive days of completed study sessions!</p>
+            </section>
 
-            <button class="secondary"
-                    onclick="returnToMenu()">
-                Back to Menu
-            </button>
+            <footer class="main-footer">
+                QUIET PAGES · A PLACE FOR YOUR THOUGHTS
+            </footer>
 
-        </section>
+        </main>
 
-        <section id="exit-message" class="panel" hidden>
+    </div>
 
-            <h2>Great Work!</h2>
-
-            <p>Keep up the great work! See you next time!</p>
-
-        </section>
-
-    </main>
+    <script src="script.js"></script>
 
 </body>
 </html>
