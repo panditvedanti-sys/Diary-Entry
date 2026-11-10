@@ -15,76 +15,49 @@
 <body>
 
     <div class="app-container">
-
-        <!-- SIDEBAR -->
         <aside class="sidebar">
             <div class="brand">
                 <div class="brand-icon">Q</div>
                 <div>
-                    <h1>Quiet Pages</h1>
+                    <h1>The Quiet Enfolds of Your Mind</h1>
                     <p>YOUR PERSONAL JOURNAL</p>
                 </div>
             </div>
 
             <nav>
-                <button class="nav-button active" onclick="app.showHome()">
-                    <span>⌂</span> Home
-                </button>
-
-                <button class="nav-button" onclick="app.showAddEntry()">
-                    <span>＋</span> New Entry
-                </button>
-
-                <button class="nav-button" onclick="app.showEntries()">
-                    <span>▤</span> My Entries
-                </button>
+                <button class="nav-button active" onclick="app.showHome()">⌂ Home</button>
+                <button class="nav-button" onclick="app.showAddEntry()">＋ New Entry</button>
+                <button class="nav-button" onclick="app.showEntries()">▤ My Entries</button>
             </nav>
 
             <div class="sidebar-note">
                 <span class="quote-mark">“</span>
-                <p>A little space to collect your thoughts.</p>
-            </div>
-
-            <div class="sidebar-footer">
-                YOUR DIARY ENTRIES
+                <p>A mind that is full of conclusions is a dead mind. A living mind is a free mind, learning, never concluding. </p>
             </div>
         </aside>
 
-        <!-- MAIN CONTENT -->
         <main class="main-content">
 
             <header class="topbar">
                 <div>
-                    <p class="eyebrow">YOUR OWN SPACE</p>
+                    <p class="eyebrow">YOUR SPACE</p>
                     <h2 id="page-heading">Welcome back.</h2>
                 </div>
 
-                <button class="primary-button" onclick="app.showAddEntry()">
-                    + Write an Entry
-                </button>
+                <button class="primary-button" onclick="app.showAddEntry()">+ Write an Entry</button>
             </header>
 
             <section id="home-view" class="view">
-
                 <div class="welcome-card">
                     <div class="welcome-text">
                         <p class="eyebrow light">A MOMENT FOR YOURSELF</p>
                         <h2>Every thought<br>has a place here.</h2>
                         <p>
-                            Write freely, remember the little things,
-                            and make room for your thoughts.
+                            Your thoughts are worth remembering.
+                            So write them down.
                         </p>
 
-                        <button class="light-button" onclick="app.showAddEntry()">
-                            Start Writing →
-                        </button>
-                    </div>
-
-                    <div class="welcome-decoration">
-                        <div class="decoration-circle">
-                            <span>✦</span>
-                        </div>
-                        <p>slow down.<br>reflect. remember.</p>
+                        <button class="light-button" onclick="app.showAddEntry()">Start Writing →</button>
                     </div>
                 </div>
 
@@ -95,78 +68,56 @@
                         <h3>Recently Written</h3>
                     </div>
 
-                    <button class="text-button" onclick="app.showEntries()">
-                        View all →
-                    </button>
+                    <button class="text-button" onclick="app.showEntries()">View all →</button>
                 </div>
 
                 <div id="recent-entries" class="entries-grid">
-                    <!-- Entries appear here -->
                 </div>
 
             </section>
             <section id="add-view" class="view hidden">
-
                 <div class="form-card">
                     <p class="eyebrow">A NEW PAGE</p>
-                    <h3>What's on your mind?</h3>
+                    <h3>Something new everyday...</h3>
                     <p class="form-description">
-                        Take your time. This space is yours.
+                        Keep your thoughts safely organized. 
                     </p>
 
                     <form id="entry-form">
-
                         <label for="entry-date">Date</label>
                         <input type="date" id="entry-date" required>
 
                         <label for="entry-title">Title</label>
-                        <input
-                            type="text"
-                            id="entry-title"
-                            placeholder="Give this moment a name..."
-                            required
-                        >
+                        <input type="text" id="entry-title" placeholder="What's on your mind?" required>
 
                         <label for="entry-content">Your thoughts</label>
                         <textarea
-                            id="entry-content"
-                            rows="10"
-                            placeholder="Start writing here..."
-                            required
-                        ></textarea>
+                            id="entry-content" rows="10" placeholder="Start writing here..." required></textarea>
 
                         <div class="form-actions">
                             <button
                                 type="button"
                                 class="secondary-button"
-                                onclick="app.showHome()"
-                            >
-                                Cancel
-                            </button>
+                                onclick="app.showHome()">Cancel</button>
 
-                            <button type="submit" class="primary-button">
-                                Save Entry
-                            </button>
+                            <button type="submit" class="primary-button">Save Entry</button>
                         </div>
-
                     </form>
                 </div>
             </section>
 
             <section id="entries-view" class="view hidden">
-
                 <div class="section-heading">
                     <div>
                         <p class="eyebrow">YOUR COLLECTION</p>
                         <h3>All Entries</h3>
                         <p class="form-description">
-                            Every page you've written, all in one place.
+                            Every moment you've recorded, all in one place.
                         </p>
                     </div>
                 </div>
 
                 <div id="all-entries" class="entries-grid">
-                    <!-- Entries appear here -->
                 </div>
             </section>
             
@@ -179,77 +130,40 @@
                 <div class="detail-card">
                     <p id="detail-date" class="eyebrow"></p>
                     <h2 id="detail-title"></h2>
-
                     <div class="detail-divider"></div>
-
                     <p id="detail-content" class="detail-content"></p>
-
                     <div class="form-actions">
-                        <button class="secondary-button" onclick="app.showEntries()">
-                            Back
-                        </button>
-
-                        <button class="secondary-button" onclick="app.appendEntry()">
-                            Append Text
-                        </button>
-
-                        <button class="secondary-button" onclick="app.editEntry()">
-                            Edit Entry
-                        </button>
-
-                        <button class="danger-button" onclick="app.deleteCurrentEntry()">
-                            Delete
-                        </button>
+                        <button class="secondary-button" onclick="app.showEntries()">Back</button>
+                        <button class="secondary-button" onclick="app.appendEntry()">Append Text</button>
+                        <button class="secondary-button" onclick="app.editEntry()">Edit Entry</button>
+                        <button class="danger-button" onclick="app.deleteCurrentEntry()">Delete</button>
                     </div>
                 </div>
 
             </section>
 
             <section id="edit-view" class="view hidden">
-
                 <div class="form-card">
                     <p class="eyebrow">REVISIT A PAGE</p>
                     <h3>Edit Your Entry</h3>
-
                     <form id="edit-form">
-
                         <label for="edit-date">Date</label>
                         <input type="date" id="edit-date" required>
-
                         <label for="edit-title">Title</label>
                         <input type="text" id="edit-title" required>
-
                         <label for="edit-content">Content</label>
                         <textarea id="edit-content" rows="10" required></textarea>
-
                         <div class="form-actions">
-                            <button
-                                type="button"
-                                class="secondary-button"
-                                onclick="app.showDetail()"
-                            >
-                                Cancel
-                            </button>
-
-                            <button type="submit" class="primary-button">
-                                Save Changes
-                            </button>
+                            <button type="button" class="secondary-button" onclick="app.showDetail()">Cancel</button>
+                            <button type="submit" class="primary-button">Save Changes</button>
                         </div>
-
                     </form>
                 </div>
-
             </section>
 
-            <footer class="main-footer">
-                QUIET PAGES · A PLACE FOR YOUR THOUGHTS
-            </footer>
-
+            <footer class="main-footer">THE QUIET ENFOLDS OF YOUR MIND · A PLACE FOR YOUR THOUGHTS</footer>
         </main>
-
     </div>
-
     <script src="script.js"></script>
-
 </body>
 </html>
